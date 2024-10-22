@@ -295,7 +295,8 @@ extension VisionObjectRecognitionViewController {
     
     func show3DModel(at worldCoord: SCNVector3 ) {
         print("show 3d model at \(worldCoord)")
-        guard let node : SCNNode = loadNode() else {return}
+//        guard let node : SCNNode = loadNode() else {return}
+        guard let node : SCNNode = createARNodeWith(image: UIImage(named: "eye")!, size: CGSizeMake(0.1, 0.1)) else {return}
         sceneView.scene.rootNode.addChildNode(node)
         node.position = worldCoord
         
@@ -316,6 +317,33 @@ extension VisionObjectRecognitionViewController {
         assetNode.scale = SCNVector3(0.001, 0.001, 0.001)
         
         return assetNode
+    }
+    
+    func createARNodeWith(image: UIImage, size: CGSize) -> SCNNode? {
+        
+        // Create a SceneKit plane geometry matching the size of the detected image
+//        let planeGeometry = SCNPlane(width: imageAnchor.referenceImage.physicalSize.width,
+//                                     height: imageAnchor.referenceImage.physicalSize.height)
+        
+        let planeGeometry = SCNPlane(width: size.width,
+                                     height: size.height)
+        
+        // Create a SceneKit material with the desired image
+        let material = SCNMaterial()
+        material.diffuse.contents = image
+        
+        // Assign the material to the plane geometry
+        planeGeometry.materials = [material]
+        
+        // Create a SceneKit node with the plane geometry
+        let planeNode = SCNNode(geometry: planeGeometry)
+        
+        // Rotate the plane to be parallel to the detected image
+        planeNode.eulerAngles.x = -.pi / 2
+        
+        return planeNode
+        // Add the plane node as a child of the anchor node
+//        node.addChildNode(planeNode)
     }
 }
 
