@@ -22,6 +22,13 @@ class VisionObjectRecognitionViewController: ViewController {
     // Vision parts
     private var requests = [VNRequest]()
     
+    var trackingRequest: VNTrackObjectRequest?
+    var initialBoundingBox: CGRect?
+        
+    // Initialize the last observation to nil
+    var lastObservation: VNDetectedObjectObservation?
+    var node: SCNNode?
+    
     var layerScale: CGFloat = 1.0
     
     @discardableResult
@@ -63,6 +70,26 @@ class VisionObjectRecognitionViewController: ViewController {
         detectionOverlay.addSublayer(boxLayer)
     }
     
+    
+    func handleObservation(boundingBox: CGRect,confidence: VNConfidence, identifier: String) {
+        var layerBounds = VNImageRectForNormalizedRect(boundingBox, Int(bufferSize.width), Int(bufferSize.height))
+        
+        var raycastBounds = VNImageRectForNormalizedRect(boundingBox, Int(sceneView.bounds.width), Int(sceneView.bounds.height))
+        
+        show3DModel(at: CGPoint(x: raycastBounds.midX, y: raycastBounds.midY))
+        
+        if showLayers {
+            let shapeLayer = self.createRoundedRectLayerWithBounds(layerBounds)
+            
+            let textLayer = self.createTextSubLayerInBounds(layerBounds,
+                                                            identifier: identifier,
+                                                            confidence: confidence)
+            
+            shapeLayer.addSublayer(textLayer)
+            detectionOverlay.addSublayer(shapeLayer)
+        }
+    }
+    
     func drawVisionRequestResults(_ results: [Any]) {
 //        print ("drawVisionRequestResults")
         if showLayers {
@@ -84,22 +111,11 @@ class VisionObjectRecognitionViewController: ViewController {
             }
             assert(bufferSize.width > 0)
             assert(bufferSize.height > 0)
-            var layerBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
             
-            var raycastBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(sceneView.bounds.width), Int(sceneView.bounds.height))
+            initialBoundingBox = objectObservation.boundingBox
             
-            show3DModel(at: CGPoint(x: raycastBounds.midX, y: raycastBounds.midY))
+            handleObservation(boundingBox: objectObservation.boundingBox, confidence: objectObservation.confidence, identifier: topLabelObservation.identifier)
             
-            if showLayers {
-                let shapeLayer = self.createRoundedRectLayerWithBounds(layerBounds)
-                
-                let textLayer = self.createTextSubLayerInBounds(layerBounds,
-                                                                identifier: topLabelObservation.identifier,
-                                                                confidence: topLabelObservation.confidence)
-                
-                shapeLayer.addSublayer(textLayer)
-                detectionOverlay.addSublayer(shapeLayer)
-            }
 //            print ("\(topLabelObservation.identifier) \(topLabelObservation.confidence) bounds: \(objectBounds)")
         }
         if showLayers {
@@ -133,6 +149,56 @@ class VisionObjectRecognitionViewController: ViewController {
             print(error)
         }
     }
+    
+    func performObjectTracking(in ciImage: CIImage) {
+           // Create a new Vision request handler
+//           let requestHandler = VNImageRequestHandler(ciImage: CIImage(cvPixelBuffer: frame), options: [:])
+        
+        let exifOrientation = exifOrientationFromDeviceOrientation()
+        
+        let requestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: exifOrientation, options: [:])
+           
+           // Initialize the tracking request if it doesn't exist
+        if trackingRequest == nil, let initialBoundingBox {
+               // Assuming you have an initial bounding box for the object
+//               let initialBoundingBox = CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
+               
+               // Create the initial observation
+               let initialObservation = VNDetectedObjectObservation(boundingBox: initialBoundingBox)
+               
+               // Create the tracking request
+               trackingRequest = VNTrackObjectRequest(detectedObjectObservation: initialObservation)
+           }
+           
+           // Perform the tracking request
+           do {
+               try requestHandler.perform([trackingRequest!])
+               
+               // Get the tracking results
+               guard let results = trackingRequest?.results as? [VNDetectedObjectObservation] else {
+                   return
+               }
+               
+               // Update the last observation
+               lastObservation = results.first
+               
+               // Process the tracking results
+               if let observation = lastObservation {
+                   // Get the normalized bounding box
+                   let normalizedBoundingBox = observation.boundingBox
+                   
+                   // Convert the normalized bounding box to view coordinates if needed
+                   handleObservation(boundingBox: observation.boundingBox,confidence: 1.0, identifier: "")
+//                   let viewBoundingBox = convertNormalizedBoundingBoxToViewCoordinates(normalizedBoundingBox)
+                   
+                   // Update the UI or perform any other actions based on the tracking results
+                   // ...
+               }
+           } catch {
+               print("Error performing tracking: \(error.localizedDescription)")
+           }
+       }
+    
     
     override func setupAVCapture() {
 //        super.setupAVCapture()
@@ -296,13 +362,16 @@ extension VisionObjectRecognitionViewController {
     func show3DModel(at worldCoord: SCNVector3 ) {
         print("show 3d model at \(worldCoord)")
 //        guard let node : SCNNode = loadNode() else {return}
-        guard let node : SCNNode = createARNodeWith(image: UIImage(named: "eye")!, size: CGSizeMake(0.1, 0.1)) else {return}
-        sceneView.scene.rootNode.addChildNode(node)
-        node.position = worldCoord
-        
-        if sceneView.scene.rootNode.childNodes.count > 10 {
-            sceneView.scene.rootNode.childNodes.first?.removeFromParentNode()
+        if node == nil {
+            node = createARNodeWith(image: UIImage(named: "eye")!, size: CGSizeMake(0.1, 0.1))
+            sceneView.scene.rootNode.addChildNode(node!)
         }
+        
+        node!.position = worldCoord
+        
+//        if sceneView.scene.rootNode.childNodes.count > 1 {
+//            sceneView.scene.rootNode.childNodes.first?.removeFromParentNode()
+//        }
     }
 
     func loadNode() -> SCNNode? {
