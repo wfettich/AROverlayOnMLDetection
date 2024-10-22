@@ -72,35 +72,35 @@ class VisionObjectRecognitionViewController: ViewController {
         }
         
         addTopLayer()
+        show3DModel(at: CGPoint(x: 0.5, y: 0.5))
         for observation in results where observation is VNRecognizedObjectObservation {
             guard let objectObservation = observation as? VNRecognizedObjectObservation else {
                 continue
             }
             // Select only the label with the highest confidence.
             let topLabelObservation = objectObservation.labels[0]
-//            if topLabelObservation.confidence < 0.95 {
-//                continue
-//            }
+            if topLabelObservation.confidence < 0.95 {
+                continue
+            }
             assert(bufferSize.width > 0)
             assert(bufferSize.height > 0)
-            var objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
-//            objectBounds.origin.x += detectionOverlay.bounds.origin.x
-//            objectBounds.origin.y += detectionOverlay.bounds.origin.y
-//            let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(sceneView.frame.width), Int(sceneView.frame.height))
+            var layerBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
             
-            show3DModel(at: CGPoint(x: objectBounds.midX, y: objectBounds.midY))
+            var raycastBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(sceneView.bounds.width), Int(sceneView.bounds.height))
+            
+            show3DModel(at: CGPoint(x: raycastBounds.midX, y: raycastBounds.midY))
             
             if showLayers {
-                let shapeLayer = self.createRoundedRectLayerWithBounds(objectBounds)
+                let shapeLayer = self.createRoundedRectLayerWithBounds(layerBounds)
                 
-                let textLayer = self.createTextSubLayerInBounds(objectBounds,
+                let textLayer = self.createTextSubLayerInBounds(layerBounds,
                                                                 identifier: topLabelObservation.identifier,
                                                                 confidence: topLabelObservation.confidence)
                 
                 shapeLayer.addSublayer(textLayer)
                 detectionOverlay.addSublayer(shapeLayer)
             }
-            print ("\(topLabelObservation.identifier) \(topLabelObservation.confidence) bounds: \(objectBounds)")
+//            print ("\(topLabelObservation.identifier) \(topLabelObservation.confidence) bounds: \(objectBounds)")
         }
         if showLayers {
             self.updateLayerGeometry()
@@ -194,7 +194,7 @@ class VisionObjectRecognitionViewController: ViewController {
 //        scale = 1.0
 //        layerScale = 0.5
         layerScale = 1.0
-        print("layerScale: \(layerScale)")
+//        print("layerScale: \(layerScale)")
         CATransaction.begin()
         CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
         
@@ -234,7 +234,7 @@ class VisionObjectRecognitionViewController: ViewController {
     }
     
     func createRoundedRectLayerWithBounds(_ bounds: CGRect) -> CALayer {
-        print("show rect with bounds: \(bounds), bufferSize: \(bufferSize)")
+//        print("show rect with bounds: \(bounds), bufferSize: \(bufferSize)")
         let shapeLayer = CALayer()
         shapeLayer.bounds = bounds
         shapeLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
@@ -248,16 +248,38 @@ class VisionObjectRecognitionViewController: ViewController {
 extension VisionObjectRecognitionViewController {
  
     private func show3DModel(at coordinate: CGPoint) {
+//        let scale = 2.0
+        let scale = 1.0
+//        var coordinate = coordinate
+//        coordinate.x *= scale
+//        coordinate.y *= scale
+        
+//        let angle = CGFloat(.pi / 2.0)
+//        let angle: CGFloat = 0
+//        coordinate.setAffineTransform()
+        
+//        coordinate = coordinate.applying(
+//            CGAffineTransform(rotationAngle: angle)
+//                .scaledBy(x: 1.0, y: -1.0)
+//        )
+        
+//        print("raycast query at: \(coordinate)")
+        
+//        let middleCoord = CGPointMake(sceneView.bounds.midX, sceneView.bounds.midY)
+        
         /// Create a raycast query using the current frame
         if let raycastQuery: ARRaycastQuery = sceneView.raycastQuery(
+//            from: coordinate,
             from: coordinate,
             allowing: .estimatedPlane,
-            alignment: .horizontal
+            alignment: .any
         ) {
             // Performing raycast from the clicked location
             let raycastResults: [ARRaycastResult] = sceneView.session.raycast(raycastQuery)
             
-            print("raycast results: \(raycastResults.debugDescription)")
+            if !raycastResults.isEmpty {
+                print("raycast results: \(raycastResults.debugDescription)")
+            }
             
             // Based on the raycast result, get the closest intersecting point on the plane
             if let closestResult = raycastResults.first {
@@ -266,7 +288,7 @@ extension VisionObjectRecognitionViewController {
                 let worldCoord : SCNVector3 = SCNVector3Make(transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
                 
                 /// Load 3D Model into the scene as SCNNode and adding into the scene
-//                show3DModel(at: worldCoord)
+                show3DModel(at: worldCoord)
             }
         }
     }
@@ -302,7 +324,7 @@ extension VisionObjectRecognitionViewController {
 extension VisionObjectRecognitionViewController: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
 
-        print("arFrame: \(frame.camera.imageResolution)")
+//        print("arFrame: \(frame.camera.imageResolution)")
         
 //        bufferSize.width = rootLayer.frame.width //frame.camera.imageResolution.width
 //        bufferSize.height = rootLayer.frame.height //frame.camera.imageResolution.height
@@ -318,7 +340,7 @@ extension VisionObjectRecognitionViewController: ARSessionDelegate {
         let uiImage = UIImage(ciImage: image, scale: scale, orientation: .right)
         bufferSize.width = image.extent.width / 2
         bufferSize.height = image.extent.height / 2
-        print("bufferSize: \(bufferSize)")
+//        print("bufferSize: \(bufferSize)")
         
         detectionOverlay.bounds = CGRectMake(0, 0, bufferSize.width, bufferSize.height)
         previewView.image = uiImage
