@@ -26,7 +26,7 @@
 		FA4750C920BF3F48003E19ED /* Breakfast Finder Logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Breakfast Finder Logo.png"; sourceTree = SOURCE_ROOT; };
 		FA68723820AA028000D82F25 /* ObjectDetector.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ObjectDetector.mlmodel; sourceTree = "<group>"; };
 		FAB417F52099308400494E9C /* VisionObjectRecognitionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisionObjectRecognitionViewController.swift; sourceTree = "<group>"; };
-		FAD5009B1ED668B60074D713 /* BreakfastFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreakfastFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAD5009B1ED668B60074D713 /* AROverlayOnMLDetection.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AROverlayOnMLDetection.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAD5009E1ED668B60074D713 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FAD500A01ED668B60074D713 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		FAD500A31ED668B60074D713 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -66,7 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				C2A2AB60C2A2AB2000000001 /* README.md */,
-				FAD5009D1ED668B60074D713 /* BreakfastFinder */,
+				FAD5009D1ED668B60074D713 /* AROverlayOnMLDetection */,
 				FAD5009C1ED668B60074D713 /* Products */,
 				FA86553BE8674B6BE41BAA64 /* Configuration */,
 				6699E7B5AD92619B7FE916AC /* LICENSE */,
@@ -76,12 +76,12 @@
 		FAD5009C1ED668B60074D713 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				FAD5009B1ED668B60074D713 /* BreakfastFinder.app */,
+				FAD5009B1ED668B60074D713 /* AROverlayOnMLDetection.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		FAD5009D1ED668B60074D713 /* BreakfastFinder */ = {
+		FAD5009D1ED668B60074D713 /* AROverlayOnMLDetection */ = {
 			isa = PBXGroup;
 			children = (
 				B69399CC2C9C6C75003C32D4 /* traffic_light.usdz */,
@@ -95,15 +95,15 @@
 				FA4750C920BF3F48003E19ED /* Breakfast Finder Logo.png */,
 				FAD500AA1ED668B60074D713 /* Info.plist */,
 			);
-			path = BreakfastFinder;
+			path = AROverlayOnMLDetection;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		FAD5009A1ED668B60074D713 /* BreakfastFinder */ = {
+		FAD5009A1ED668B60074D713 /* AROverlayOnMLDetection */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FAD500AD1ED668B60074D713 /* Build configuration list for PBXNativeTarget "BreakfastFinder" */;
+			buildConfigurationList = FAD500AD1ED668B60074D713 /* Build configuration list for PBXNativeTarget "AROverlayOnMLDetection" */;
 			buildPhases = (
 				FAD500971ED668B60074D713 /* Sources */,
 				FAD500981ED668B60074D713 /* Frameworks */,
@@ -113,9 +113,9 @@
 			);
 			dependencies = (
 			);
-			name = BreakfastFinder;
+			name = AROverlayOnMLDetection;
 			productName = "VisionCamObjectRecognition-Swift";
-			productReference = FAD5009B1ED668B60074D713 /* BreakfastFinder.app */;
+			productReference = FAD5009B1ED668B60074D713 /* AROverlayOnMLDetection.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -135,7 +135,7 @@
 					};
 				};
 			};
-			buildConfigurationList = FAD500961ED668B60074D713 /* Build configuration list for PBXProject "BreakfastFinder" */;
+			buildConfigurationList = FAD500961ED668B60074D713 /* Build configuration list for PBXProject "AROverlayOnMLDetection" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -148,7 +148,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				FAD5009A1ED668B60074D713 /* BreakfastFinder */,
+				FAD5009A1ED668B60074D713 /* AROverlayOnMLDetection */,
 			);
 		};
 /* End PBXProject section */
@@ -328,10 +328,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = EWU35MGF9R;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				INFOPLIST_FILE = BreakfastFinder/Info.plist;
+				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.BreakfastFinder${SAMPLE_CODE_DISAMBIGUATOR}";
+				PRODUCT_BUNDLE_IDENTIFIER = com.wf.AROverlaySample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -348,10 +348,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = EWU35MGF9R;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				INFOPLIST_FILE = BreakfastFinder/Info.plist;
+				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.BreakfastFinder${SAMPLE_CODE_DISAMBIGUATOR}";
+				PRODUCT_BUNDLE_IDENTIFIER = com.wf.AROverlaySample;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -362,7 +362,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		FAD500961ED668B60074D713 /* Build configuration list for PBXProject "BreakfastFinder" */ = {
+		FAD500961ED668B60074D713 /* Build configuration list for PBXProject "AROverlayOnMLDetection" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FAD500AB1ED668B60074D713 /* Debug */,
@@ -371,7 +371,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FAD500AD1ED668B60074D713 /* Build configuration list for PBXNativeTarget "BreakfastFinder" */ = {
+		FAD500AD1ED668B60074D713 /* Build configuration list for PBXNativeTarget "AROverlayOnMLDetection" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FAD500AE1ED668B60074D713 /* Debug */,
