@@ -343,9 +343,9 @@ extension VisionObjectRecognitionViewController {
             // Performing raycast from the clicked location
             let raycastResults: [ARRaycastResult] = sceneView.session.raycast(raycastQuery)
             
-            if !raycastResults.isEmpty {
+//            if !raycastResults.isEmpty {
                 print("raycast results: \(raycastResults.debugDescription)")
-            }
+//            }
             
             // Based on the raycast result, get the closest intersecting point on the plane
             if let closestResult = raycastResults.first {
