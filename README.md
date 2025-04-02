@@ -1,3 +1,9 @@
+![](github_assets/screenshot.png)
+
+
+![](github_assets/cut.gif)
+
+
 # AR Object Recognition
 
 An iOS application that combines ARKit, Vision, and Core ML to detect, recognize and track objects in the real world, and display AR content on top of recognized objects.
