@@ -1,8 +1,8 @@
 /*
-See the LICENSE.txt file for this sample’s licensing information.
+See the LICENSE.txt file for this sample's licensing information.
 
 Abstract:
-Contains the object recognition view controller for the Breakfast Finder.
+Contains the object recognition view controller for AR object detection.
 */
 
 import UIKit
@@ -70,11 +70,10 @@ class VisionObjectRecognitionViewController: ViewController {
         detectionOverlay.addSublayer(boxLayer)
     }
     
-    
-    func handleObservation(boundingBox: CGRect,confidence: VNConfidence, identifier: String) {
-        var layerBounds = VNImageRectForNormalizedRect(boundingBox, Int(bufferSize.width), Int(bufferSize.height))
+    func handleObservation(boundingBox: CGRect, confidence: VNConfidence, identifier: String) {
+        let layerBounds = VNImageRectForNormalizedRect(boundingBox, Int(bufferSize.width), Int(bufferSize.height))
         
-        var raycastBounds = VNImageRectForNormalizedRect(boundingBox, Int(sceneView.bounds.width), Int(sceneView.bounds.height))
+        let raycastBounds = VNImageRectForNormalizedRect(boundingBox, Int(sceneView.bounds.width), Int(sceneView.bounds.height))
         
         show3DModel(at: CGPoint(x: raycastBounds.midX, y: raycastBounds.midY))
         
@@ -91,7 +90,6 @@ class VisionObjectRecognitionViewController: ViewController {
     }
     
     func drawVisionRequestResults(_ results: [Any]) {
-//        print ("drawVisionRequestResults")
         if showLayers {
             CATransaction.begin()
             CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
@@ -115,8 +113,6 @@ class VisionObjectRecognitionViewController: ViewController {
             initialBoundingBox = objectObservation.boundingBox
             
             handleObservation(boundingBox: objectObservation.boundingBox, confidence: objectObservation.confidence, identifier: topLabelObservation.identifier)
-            
-//            print ("\(topLabelObservation.identifier) \(topLabelObservation.confidence) bounds: \(objectBounds)")
         }
         if showLayers {
             self.updateLayerGeometry()
@@ -128,21 +124,10 @@ class VisionObjectRecognitionViewController: ViewController {
         previewView.setNeedsDisplay()
     }
     
-    override func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            return
-        }
-        
-        fatalError("Should not be called")
-//        detectImage(in: pixelBuffer)
-        
-    }
-    
     private func detectImage(in ciImage: CIImage) {
         let exifOrientation = exifOrientationFromDeviceOrientation()
         
         let imageRequestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: exifOrientation, options: [:])
-//        let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: exifOrientation, options: [:])
         do {
             try imageRequestHandler.perform(self.requests)
         } catch {
@@ -151,71 +136,50 @@ class VisionObjectRecognitionViewController: ViewController {
     }
     
     func performObjectTracking(in ciImage: CIImage) {
-           // Create a new Vision request handler
-//           let requestHandler = VNImageRequestHandler(ciImage: CIImage(cvPixelBuffer: frame), options: [:])
-        
         let exifOrientation = exifOrientationFromDeviceOrientation()
-        
         let requestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: exifOrientation, options: [:])
            
-           // Initialize the tracking request if it doesn't exist
+        // Initialize the tracking request if it doesn't exist
         if trackingRequest == nil, let initialBoundingBox {
-               // Assuming you have an initial bounding box for the object
-//               let initialBoundingBox = CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
-               
-               // Create the initial observation
-               let initialObservation = VNDetectedObjectObservation(boundingBox: initialBoundingBox)
-               
-               // Create the tracking request
-               trackingRequest = VNTrackObjectRequest(detectedObjectObservation: initialObservation)
-           }
+            // Create the initial observation
+            let initialObservation = VNDetectedObjectObservation(boundingBox: initialBoundingBox)
+            
+            // Create the tracking request
+            trackingRequest = VNTrackObjectRequest(detectedObjectObservation: initialObservation)
+        }
            
-           // Perform the tracking request
-           do {
-               try requestHandler.perform([trackingRequest!])
-               
-               // Get the tracking results
-               guard let results = trackingRequest?.results as? [VNDetectedObjectObservation] else {
-                   return
-               }
-               
-               // Update the last observation
-               lastObservation = results.first
-               
-               // Process the tracking results
-               if let observation = lastObservation {
-                   // Get the normalized bounding box
-                   let normalizedBoundingBox = observation.boundingBox
-                   
-                   // Convert the normalized bounding box to view coordinates if needed
-                   handleObservation(boundingBox: observation.boundingBox,confidence: 1.0, identifier: "")
-//                   let viewBoundingBox = convertNormalizedBoundingBoxToViewCoordinates(normalizedBoundingBox)
-                   
-                   // Update the UI or perform any other actions based on the tracking results
-                   // ...
-               }
-           } catch {
-               print("Error performing tracking: \(error.localizedDescription)")
-           }
-       }
+        // Perform the tracking request
+        do {
+            try requestHandler.perform([trackingRequest!])
+            
+            // Get the tracking results
+            guard let results = trackingRequest?.results as? [VNDetectedObjectObservation] else {
+                return
+            }
+            
+            // Update the last observation
+            lastObservation = results.first
+            
+            // Process the tracking results
+            if let observation = lastObservation {
+                handleObservation(boundingBox: observation.boundingBox, confidence: 1.0, identifier: "")
+            }
+        } catch {
+            print("Error performing tracking: \(error.localizedDescription)")
+        }
+    }
     
-    
-    override func setupAVCapture() {
-//        super.setupAVCapture()
-        
-        // setup Vision parts
+    override func setupAR() {
+        // Setup Vision parts
         setupLayers()
         updateLayerGeometry()
         setupVision()
         
-        // start the capture
-//        startCaptureSession()
-        
+        // Setup ARKit
         setupSceneView()
     }
     
     func setupSceneView() {
-        
         print(ARWorldTrackingConfiguration.supportedVideoFormats)
         
         let configuration = ARWorldTrackingConfiguration()
@@ -229,8 +193,6 @@ class VisionObjectRecognitionViewController: ViewController {
         detectionOverlay = CALayer() // container layer that has all the renderings of the observations
         detectionOverlay.name = "DetectionOverlay"
         
-//        assert(bufferSize.width > 0)
-//        assert(bufferSize.height > 0)
         detectionOverlay.bounds = CGRect(x: 0.0,
                                          y: 0.0,
                                          width: bufferSize.width,
@@ -247,32 +209,20 @@ class VisionObjectRecognitionViewController: ViewController {
     
     func updateLayerGeometry() {
         let bounds = rootLayer.bounds
-//        var scale: CGFloat
         
         let xScale: CGFloat = bounds.size.width / bufferSize.height
         let yScale: CGFloat = bounds.size.height / bufferSize.width
         
-//        scale = fmax(xScale, yScale)
-//        if scale.isInfinite {
-//            scale = 1.0
-//        }
-        
-//        scale = 1.0
-//        layerScale = 0.5
         layerScale = 1.0
-//        print("layerScale: \(layerScale)")
+        
         CATransaction.begin()
         CATransaction.setValue(kCFBooleanTrue, forKey: kCATransactionDisableActions)
         
-//        detectionOverlay.bounds = rootLayer.bounds
-//        detectionOverlay.position = CGPoint(x: 0, y: 0)
         detectionOverlay.zPosition = 100
         
         // rotate the layer into screen orientation and scale and mirror
         let angle = CGFloat(.pi / 2.0)
-//        let angle = 0
         detectionOverlay.setAffineTransform(CGAffineTransform(rotationAngle: angle).scaledBy(x: layerScale, y: -layerScale))
-//        detectionOverlay.contentsScale = 2.0
         // center the layer
         detectionOverlay.position = CGPoint(x: bounds.midX, y: bounds.midY)
         
@@ -294,13 +244,11 @@ class VisionObjectRecognitionViewController: ViewController {
         textLayer.contentsScale = 4.0 // retina rendering
         // rotate the layer into screen orientation and scale and mirror
         let angle = CGFloat(.pi / 2.0)
-//        let angle: CGFloat = 0
         textLayer.setAffineTransform(CGAffineTransform(rotationAngle: angle).scaledBy(x: 1.0, y: -1.0))
         return textLayer
     }
     
     func createRoundedRectLayerWithBounds(_ bounds: CGRect) -> CALayer {
-//        print("show rect with bounds: \(bounds), bufferSize: \(bufferSize)")
         let shapeLayer = CALayer()
         shapeLayer.bounds = bounds
         shapeLayer.position = CGPoint(x: bounds.midX, y: bounds.midY)
@@ -311,31 +259,14 @@ class VisionObjectRecognitionViewController: ViewController {
     }
 }
 
+// MARK: - 3D Model Display
 extension VisionObjectRecognitionViewController {
  
     private func show3DModel(at coordinate: CGPoint) {
-//        let scale = 2.0
         let scale = 1.0
-//        var coordinate = coordinate
-//        coordinate.x *= scale
-//        coordinate.y *= scale
-        
-//        let angle = CGFloat(.pi / 2.0)
-//        let angle: CGFloat = 0
-//        coordinate.setAffineTransform()
-        
-//        coordinate = coordinate.applying(
-//            CGAffineTransform(rotationAngle: angle)
-//                .scaledBy(x: 1.0, y: -1.0)
-//        )
-        
-//        print("raycast query at: \(coordinate)")
-        
-//        let middleCoord = CGPointMake(sceneView.bounds.midX, sceneView.bounds.midY)
         
         /// Create a raycast query using the current frame
         if let raycastQuery: ARRaycastQuery = sceneView.raycastQuery(
-//            from: coordinate,
             from: coordinate,
             allowing: .estimatedPlane,
             alignment: .any
@@ -343,9 +274,7 @@ extension VisionObjectRecognitionViewController {
             // Performing raycast from the clicked location
             let raycastResults: [ARRaycastResult] = sceneView.session.raycast(raycastQuery)
             
-//            if !raycastResults.isEmpty {
-                print("raycast results: \(raycastResults.debugDescription)")
-//            }
+            print("raycast results: \(raycastResults.debugDescription)")
             
             // Based on the raycast result, get the closest intersecting point on the plane
             if let closestResult = raycastResults.first {
@@ -361,17 +290,12 @@ extension VisionObjectRecognitionViewController {
     
     func show3DModel(at worldCoord: SCNVector3 ) {
         print("show 3d model at \(worldCoord)")
-//        guard let node : SCNNode = loadNode() else {return}
         if node == nil {
             node = createARNodeWith(image: UIImage(named: "eye")!, size: CGSizeMake(0.1, 0.1))
             sceneView.scene.rootNode.addChildNode(node!)
         }
         
         node!.position = worldCoord
-        
-//        if sceneView.scene.rootNode.childNodes.count > 1 {
-//            sceneView.scene.rootNode.childNodes.first?.removeFromParentNode()
-//        }
     }
 
     func loadNode() -> SCNNode? {
@@ -389,13 +313,7 @@ extension VisionObjectRecognitionViewController {
     }
     
     func createARNodeWith(image: UIImage, size: CGSize) -> SCNNode? {
-        
-        // Create a SceneKit plane geometry matching the size of the detected image
-//        let planeGeometry = SCNPlane(width: imageAnchor.referenceImage.physicalSize.width,
-//                                     height: imageAnchor.referenceImage.physicalSize.height)
-        
-        let planeGeometry = SCNPlane(width: size.width,
-                                     height: size.height)
+        let planeGeometry = SCNPlane(width: size.width, height: size.height)
         
         // Create a SceneKit material with the desired image
         let material = SCNMaterial()
@@ -411,66 +329,35 @@ extension VisionObjectRecognitionViewController {
         planeNode.eulerAngles.x = -.pi / 2
         
         return planeNode
-        // Add the plane node as a child of the anchor node
-//        node.addChildNode(planeNode)
     }
 }
 
-
-
+// MARK: - ARSessionDelegate
 extension VisionObjectRecognitionViewController: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-
-//        print("arFrame: \(frame.camera.imageResolution)")
-        
-//        bufferSize.width = rootLayer.frame.width //frame.camera.imageResolution.width
-//        bufferSize.height = rootLayer.frame.height //frame.camera.imageResolution.height
-        
-//        bufferSize.width = frame.camera.imageResolution.width
-//        bufferSize.height = frame.camera.imageResolution.height
-        
-        
-        
         let image = CIImage(cvPixelBuffer: frame.capturedImage)
         let scale = UIScreen.main.scale
-//        print( "scale: \(scale)")
         let uiImage = UIImage(ciImage: image, scale: scale, orientation: .right)
         bufferSize.width = image.extent.width / 2
         bufferSize.height = image.extent.height / 2
-//        print("bufferSize: \(bufferSize)")
         
         detectionOverlay.bounds = CGRectMake(0, 0, bufferSize.width, bufferSize.height)
         previewView.image = uiImage
         detectImage(in: image)
-//        detectImage(in: frame.capturedImage)
-//        let image = CIImage(cvPixelBuffer: frame.capturedImage)
-        
-//        let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: nil)
-//        let features = detector!.features(in: image)
-//
-//        for feature in features as! [CIQRCodeFeature] {
-//            if !discoveredQRCodes.contains(feature.messageString!) {
-//                discoveredQRCodes.append(feature.messageString!)
-//                let url = URL(string: feature.messageString!)
-//                let position = SCNVector3(frame.camera.transform.columns.3.x,
-//                                          frame.camera.transform.columns.3.y,
-//                                          frame.camera.transform.columns.3.z)
-//            }
-//         }
     }
 }
 
+// MARK: - ARSCNViewDelegate
 extension VisionObjectRecognitionViewController: ARSCNViewDelegate {
     
     /// - Tag: ImageWasRecognized
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-//        alteredImage?.add(anchor, node: node)
-//        setMessageHidden(true)
+        // Handle anchor additions if needed
     }
 
     /// - Tag: DidUpdateAnchor
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-//        alteredImage?.update(anchor)
+        // Handle anchor updates if needed
     }
     
     func session(_ session: ARSession, didFailWithError error: Error) {
@@ -480,7 +367,6 @@ extension VisionObjectRecognitionViewController: ARSCNViewDelegate {
             // Restart the experience, as otherwise the AR session remains stopped.
             // There's no benefit in surfacing this error to the user.
             print("Error: The detected rectangle cannot be tracked.")
-//            searchForNewImageToTrack()
             return
         }
         
@@ -499,7 +385,6 @@ extension VisionObjectRecognitionViewController: ARSCNViewDelegate {
             let alertController = UIAlertController(title: "The AR session failed.", message: errorMessage, preferredStyle: .alert)
             let restartAction = UIAlertAction(title: "Restart Session", style: .default) { _ in
                 alertController.dismiss(animated: true, completion: nil)
-//                self.searchForNewImageToTrack()
             }
             alertController.addAction(restartAction)
             self.present(alertController, animated: true, completion: nil)
